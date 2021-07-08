@@ -1,0 +1,46 @@
+{
+  "name": "@produck/menu-vue",
+  "version": "0.1.0",
+  "description": "A vue plugin of @produck/menu-es6",
+  "main": "lib/index",
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "clean": "rm -rf ./dist",
+    "build:rollup": "npm run clean && rollup --config script/rollup.config.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/produck/menu-vue.git"
+  },
+  "files": [
+    "lib",
+    "dist"
+  ],
+  "types": "lib/index.d.ts",
+  "author": "ChaosLee",
+  "license": "MIT",
+  "devDependencies": {
+    "@rollup/plugin-eslint": "^8.0.1",
+    "@rollup/plugin-node-resolve": "^13.0.0",
+    "@vue/cli-service": "~4.5.13",
+    "cross-env": "^7.0.3",
+    "eslint": "^7.30.0",
+    "eslint-plugin-vue": "^7.13.0",
+    "rollup": "^2.52.8",
+    "rollup-plugin-terser": "^7.0.2",
+    "vue": "^2.6.14",
+    "vue-template-compiler": "^2.6.14"
+  },
+  "bugs": {
+    "url": "https://github.com/produck/menu-vue/issues"
+  },
+  "homepage": "https://github.com/produck/menu-vue#readme",
+  "dependencies": {
+    "@produck/menu": "^0.1.1"
+  }
+}
