@@ -1,12 +1,33 @@
 <template>
 
-<div>
+<div
+>
+	<div
+		@contextmenu.prevent.stop="$pMenu.popup(menuOptions)"
+	>some examples</div>
 
+	<button
+		@contextmenu.prevent.stop="openMenu"
+	>-</button>
+
+	<button
+		v-p-menu.blocking.mnemonic="menuOptions"
+	>2+</button>
+
+	<div
+		v-p-menu-simple="simpleOptions"
+	>simple directive</div>
+
+	{{panelSize}}
+	<div
+
+	></div>
 </div>
 
 </template>
 
 <script>
+import { MenuItem } from '@produck/menu';
 export default {
 	name: 'App',
 	data() {
@@ -14,6 +35,48 @@ export default {
 			panelSize: 200
 		};
 	},
+	computed: {
+		menuOptions() {
+			return [
+				[
+					{
+						id: 1,
+						type: MenuItem.Clickable,
+						label: 'incr&&ease',
+						click: () => {
+							this.panelSize += 100;
+						},
+						isChecked: true
+					}
+				]
+			];
+		},
+		simpleOptions() {
+			return [
+				{
+					label: 'a',
+					click: () => console.log('fuck')
+				},
+				null,
+				{
+					label: 'b'
+				}
+			];
+		}
+	},
+	methods: {
+		openMenu() {
+			this.$pMenu.popup([
+				[
+					{
+						type: MenuItem.Clickable,
+						label: 'decrease' + Math.random().toString(16).substr(2, 8),
+						click: () => this.panelSize -= 50,
+					}
+				]
+			]);
+		}
+	}
 };
 </script>
 

@@ -1,0 +1,10 @@
+{
+	"v-p-menu-simple": {
+		"global": true,
+		"description": "Referencing a menu by simple options."
+	},
+	"v-p-menu": {
+		"global": true,
+		"description": "Referencing a menu by raw options."
+	}
+}

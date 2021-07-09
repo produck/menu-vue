@@ -1,7 +1,9 @@
+import '@produck/menu/src/style.scss';
+
 import Vue from 'vue';
 import App from './App.vue';
 import MenuPlugin from '../lib/index';
-import { MenuItem, popup } from '@produck/menu';
+import { MenuItem } from '@produck/menu';
 
 Vue.config.productionTip = false;
 Vue.use(MenuPlugin);
@@ -13,7 +15,9 @@ new Vue({
 }).$mount('#app');
 
 window.addEventListener('contextmenu', event => {
-	popup([
+	event.preventDefault();
+
+	Vue.$pMenu.Simple.popup([
 		[
 			{
 				type: MenuItem.Clickable,
@@ -22,7 +26,5 @@ window.addEventListener('contextmenu', event => {
 				}
 			}
 		]
-	], {
-
-	});
+	]);
 });
