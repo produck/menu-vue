@@ -1,5 +1,5 @@
 /*!
- * @produck/menu-vue v0.1.0
+ * @produck/menu-vue v0.1.2
  * (c) 2020-2021 ChaosLee
  * Released under the MIT License.
  */
@@ -15,6 +15,9 @@ const isFunction = any => typeOf(any, 'function'),
 	isBoolean = any => typeOf(any, 'boolean'),
 	isObject = any => typeOf(any, 'object'),
 	isNull = any => any === null;
+
+const
+	toLowerCase = string => string.toLowerCase();
 
 const DOCUMENT = document, WINDOW = window;
 const BODY = DOCUMENT.body;
@@ -164,7 +167,7 @@ const resolveLabelText = (text, noMnemonic = false) => {
 			const u = createElement('u');
 
 			u.textContent = mnemonicChar;
-			result[MNEMONIC$2] = mnemonicChar.toLowerCase();
+			result[MNEMONIC$2] = toLowerCase(mnemonicChar);
 			appendChild(fragement, createTextNode(left));
 			appendChild(fragement, u);
 			appendChild(fragement, createTextNode(right));
@@ -492,13 +495,16 @@ addEventListener(WINDOW, 'keydown', event => {
 		const topMenu = getTopMenu();
 
 		expanding = !isNull(currentMenu[EXPANDING_ITEM]);
-		expandable = topMenu[FOCUSING_ITEM][EXPANDABLE];
+
+		expandable = topMenu[FOCUSING_ITEM]
+			? topMenu[FOCUSING_ITEM][EXPANDABLE]
+			: false;
 
 		if (key in KEY_MAP_OPERATION$1) {
 			KEY_MAP_OPERATION$1[key](event);
 		} else if (MNEMONIC_REG.test(key)) {
 
-			if (topMenu[NEXT$1](key.toLowerCase())) {
+			if (topMenu[NEXT$1](toLowerCase(key))) {
 				topMenu[FOCUSING_ITEM][ACTIVE$1]();
 			}
 		}
@@ -1179,7 +1185,7 @@ addEventListener(WINDOW, 'keydown', event => {
 					state[MENU_BAR$1][ACTIVE] = true;
 				}
 
-				if (state[MENU_BAR$1][NEXT](key.toLowerCase())) {
+				if (state[MENU_BAR$1][NEXT](toLowerCase(key))) {
 					current.next();
 				}
 			}

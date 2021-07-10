@@ -1,6 +1,6 @@
 {
   "name": "@produck/menu-vue",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A vue plugin of @produck/menu-es6",
   "main": "lib/index.js",
   "vetur": {
@@ -10,8 +10,8 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "clean": "rm -rf ./dist",
-    "build:rollup": "npm run clean && rollup --config script/rollup.config.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "npm run clean && rollup --config script/rollup.config.js",
+		"prepublishOnly": "npm run build"
   },
   "publishConfig": {
     "access": "public"
@@ -47,6 +47,6 @@
   },
   "homepage": "https://github.com/produck/menu-vue#readme",
   "dependencies": {
-    "@produck/menu": "^0.1.4"
+    "@produck/menu": "^0.1.5"
   }
 }
