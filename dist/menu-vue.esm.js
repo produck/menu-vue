@@ -1,11 +1,11 @@
 /*!
- * @produck/menu-vue v0.1.2
+ * @produck/menu-vue v0.1.3
  * (c) 2020-2021 ChaosLee
  * Released under the MIT License.
  */
 const
 	assign = Object.assign,
-	throwError$1 = message => { throw new Error(message); },
+	throwError = message => { throw new Error(message); },
 	instanceOf = (instance, contructor) => instance instanceof contructor,
 	typeOf = (any, typeString) => typeof any === typeString,
 	isArray = any => Array.isArray(any);
@@ -124,69 +124,6 @@ const
 	ACTIVE$1 = 'A',
 	FOCUSABLE = 0;
 
-const
-	COLOR = 'color',
-	BACKGROUND = 'back',
-	FRONTGROUND = 'front';
-
-const
-	MUTE_FRONT_COLOR = 'mute-front-color',
-	BACKGROUND_COLOR = `${BACKGROUND}-${COLOR}`,
-	FRONTGROUND_COLOR = `${FRONTGROUND}-${COLOR}`,
-	SIZE_SM = 'size-sm',
-	SIZE_MD = 'size-md',
-	SIZE_LG = 'size-lg',
-	BAR_HEIGHT = 'bar-height',
-	ANIMATION_DURATION = 'animation-duration';
-
-const CSSVarGenerator = namespace => name => `var(--${namespace}-${name})`;
-
-const Var = CSSVarGenerator('menu');
-
-const MNEMONIC_REG = /^[a-z0-9`~?]$/i;
-
-const LABEL_REG = /^([^&]*)(&[a-z]|&&)?([^&]*)$/i;
-
-const FRAGEMENT = 'n', MNEMONIC$2 = 'f';
-
-const resolveLabelText = (text, noMnemonic = false) => {
-	const fragement = createFragement();
-	const result = { [FRAGEMENT]: fragement, [MNEMONIC$2]: null };
-	const [, left, mnemonic, right] = text.match(LABEL_REG);
-
-	if (mnemonic === undefined) {
-		appendChild(fragement, createTextNode(left));
-	} else if (mnemonic === '&&') {
-		appendChild(fragement, createTextNode([left, '&', right].join('')));
-	} else {
-		const mnemonicChar = mnemonic[1];
-
-		if (noMnemonic) {
-			appendChild(fragement, createTextNode([left, mnemonicChar, right].join('')));
-		} else  {
-			const u = createElement('u');
-
-			u.textContent = mnemonicChar;
-			result[MNEMONIC$2] = toLowerCase(mnemonicChar);
-			appendChild(fragement, createTextNode(left));
-			appendChild(fragement, u);
-			appendChild(fragement, createTextNode(right));
-		}
-	}
-
-	return result;
-};
-
-const throwError = message => { throw new Error(message); };
-
-let x = 0, y = 0;
-const getCurrentPosition = () => ({ x, y });
-
-addEventListener(WINDOW, 'mousedown', event => {
-	x = event.clientX;
-	y = event.clientY;
-});
-
 const MENU_ITEM_ROW_STYLE = {
 	display: 'block',
 	'border': '1px solid transparent'
@@ -244,6 +181,67 @@ const normalize$6 = (_options) => {
 
 	return options;
 };
+
+const
+	COLOR = 'color',
+	BACKGROUND = 'back',
+	FRONTGROUND = 'front';
+
+const
+	MUTE_FRONT_COLOR = 'mute-front-color',
+	BACKGROUND_COLOR = `${BACKGROUND}-${COLOR}`,
+	FRONTGROUND_COLOR = `${FRONTGROUND}-${COLOR}`,
+	SIZE_SM = 'size-sm',
+	SIZE_MD = 'size-md',
+	SIZE_LG = 'size-lg',
+	BAR_HEIGHT = 'bar-height',
+	ANIMATION_DURATION = 'animation-duration';
+
+const CSSVarGenerator = namespace => name => `var(--${namespace}-${name})`;
+
+const Var = CSSVarGenerator('menu');
+
+const MNEMONIC_REG = /^[a-z0-9`~?]$/i;
+
+const LABEL_REG = /^([^&]*)(&[a-z]|&&)?([^&]*)$/i;
+
+const FRAGEMENT = 'n', MNEMONIC$2 = 'f';
+
+const resolveLabelText = (text, noMnemonic = false) => {
+	const fragement = createFragement();
+	const result = { [FRAGEMENT]: fragement, [MNEMONIC$2]: null };
+	const [, left, mnemonic, right] = text.match(LABEL_REG);
+
+	if (mnemonic === undefined) {
+		appendChild(fragement, createTextNode(left));
+	} else if (mnemonic === '&&') {
+		appendChild(fragement, createTextNode([left, '&', right].join('')));
+	} else {
+		const mnemonicChar = mnemonic[1];
+
+		if (noMnemonic) {
+			appendChild(fragement, createTextNode([left, mnemonicChar, right].join('')));
+		} else  {
+			const u = createElement('u');
+
+			u.textContent = mnemonicChar;
+			result[MNEMONIC$2] = toLowerCase(mnemonicChar);
+			appendChild(fragement, createTextNode(left));
+			appendChild(fragement, u);
+			appendChild(fragement, createTextNode(right));
+		}
+	}
+
+	return result;
+};
+
+let x = 0, y = 0;
+const getCurrentPosition = () => ({ x, y });
+
+addEventListener(WINDOW, 'mousedown', event => {
+	x = event.clientX;
+	y = event.clientY;
+});
 
 const FOCUS$1 = 'F',
 	BLUR$1 = 'r',
@@ -338,11 +336,11 @@ const normalize$5 = (_options) => {
 	} = _options;
 
 	if (!isString(_label)) {
-		throwError$1('A menu item label MUST be a string.');
+		throwError('A menu item label MUST be a string.');
 	}
 
 	if (!isNull(_icon) && !instanceOf(_icon, DOCUMENT_FRAGEMENT)) {
-		throwError$1('A menu item icon MUST be a DocumentFragment.');
+		throwError('A menu item icon MUST be a DocumentFragment.');
 	}
 
 	options.label = _label;
@@ -363,6 +361,210 @@ const
 	CLICK_LISTENER = 'c',
 	DISABLED = 'd',
 	KEY_ENTER = 'E';
+
+const CHECKING_POSITION_STYLE = { top: 0, left: 0 };
+
+const MENU_ITEM_ROW_STYLE_ON_DISABLED = {
+	opacity: 0.4,
+	cursor: 'default'
+};
+
+const joinAcceleratorElement = acceleratorBarList => {
+	const lastBarIndex = acceleratorBarList.length - 1;
+	const fragement = createFragement();
+
+	acceleratorBarList.forEach((bar, index) => {
+		appendChild(fragement, bar);
+		index !== lastBarIndex && appendChild(fragement, createTextNode(' '));
+	});
+
+	return fragement;
+};
+
+const afterClickListenerList = [];
+
+const addListenerAfterClick = listener => {
+	if (!isFunction(listener)) {
+		throwError('A listener after click MUST be a function.');
+	}
+
+	afterClickListenerList.push(listener);
+};
+
+class ClickableMenuItem extends FunctionMenuItem {
+	constructor(menu, options) {
+		super(menu, options);
+
+		const rowElement = this[ROW_ELEMENT];
+		const textElement = this[TEXT_ELEMENT];
+		const acceleratorSpan = createElement('span');
+		const checkboxSpan = createElement('span');
+
+		addClass(acceleratorSpan, 'menu-item-accelerator');
+		addClass(checkboxSpan, 'menu-item-checkbox');
+
+		setStyle(acceleratorSpan, MENU_ITEM_LABEL_SPAN_STYLE, { 'text-align': 'right' });
+		setStyle(checkboxSpan, MENU_ITEM_ICON_BOX_STYLE, CHECKING_POSITION_STYLE);
+		appendChild(textElement, acceleratorSpan);
+		appendChild(textElement, checkboxSpan);
+		appendChild(acceleratorSpan, joinAcceleratorElement(options.accelerator));
+
+		addEventListener(rowElement, 'mouseup', () => this[CLICK]());
+		addEventListener(rowElement, 'contextmenu', STOP_AND_PREVENT$1);
+
+		this[CLICK_LISTENER] = options.click;
+		this[KEY_ENTER] = event => event.key === 'Enter' && this[CLICK]();
+
+		const disabled = this[DISABLED] = options.isDisabled;
+
+		if (disabled) {
+			setStyle(this[ROW_ELEMENT], MENU_ITEM_ROW_STYLE_ON_DISABLED);
+			addClass(rowElement, 'disabled');
+		}
+
+		if (options.isChecked) {
+			addClass(rowElement, 'checked');
+		}
+	}
+
+	get [FOCUSABLE]() {
+		return !this[DISABLED];
+	}
+
+	[FOCUS$1]() {
+		if (!this[DISABLED]) {
+			super[FOCUS$1]();
+		}
+	}
+
+	[BLUR$1]() {
+		if (!this[DISABLED]) {
+			super[BLUR$1]();
+		}
+	}
+
+	[CLICK]() {
+		this[CLICK_LISTENER]();
+		afterClickListenerList.forEach(listener => listener());
+	}
+
+	[ACTIVE$1]() {
+		this[CLICK]();
+	}
+}
+
+const DEFAULT_CLICK_FN = () => console.warn(undefined);
+
+const  normalize$4 = (_options) => {
+	const options = assign({
+		click: DEFAULT_CLICK_FN,
+		isChecked: false,
+		isDisabled: false,
+		accelerator: []
+	}, normalize$5(_options));
+
+	const {
+		click: _click = options.click,
+		isChecked: _isChecked = options.isChecked,
+		isDisabled: _isDisabled = options.isDisabled,
+		accelerator: _accelerator = options.accelerator
+	} = _options;
+
+	if (!isFunction(_click)) {
+		throwError('A `.click()` of clickable item MUST be a function.');
+	}
+
+	if (!isBoolean(_isChecked)) {
+		throwError('A `.isChecked` MUST be a `boolean`.');
+	}
+
+	if (!isBoolean(_isDisabled)) {
+		throwError('A `.isDisabled` MUST be a `boolean`.');
+	}
+
+	if (!isArray(_accelerator)) {
+		throwError('A `.accelerator` MUST be an array of string.');
+	}
+
+	options.accelerator = _accelerator.map(_bar => {
+		if (!instanceOf(_bar, DOCUMENT_FRAGEMENT)) {
+			throwError('A `.accelerator` MUST be a `DocumentFragement`.');
+		}
+
+		return _bar;
+	});
+
+	options.click = _click;
+	options.isChecked = _isChecked;
+	options.isDisabled = _isDisabled;
+
+	return options;
+};
+
+const NORMALIZER = 'n', TYPE = 't';
+const TYPE_NORMALIZER_MAP = [];
+
+const normalize$3 = (options) => {
+	options.type = 'type' in options ? options.type : ClickableMenuItem;
+
+	const pair = TYPE_NORMALIZER_MAP.find(pair => pair[TYPE] === options.type);
+
+	if (pair === undefined) {
+		throwError('Invalid menu item type.');
+	}
+
+	return pair[NORMALIZER](options);
+};
+
+const normalizeMenuOptions = (_options) => {
+	if (!isArray(_options)) {
+		throwError('Menu options MUST be an array.');
+	}
+
+	return _options.map(_groupOptions => {
+		if (!isArray(_groupOptions)) {
+			throwError('Menu item group options MUST be an array.');
+		}
+
+		const NORMALIZE_ITEM_OPTIONS = options => normalize$3(options);
+
+		return _groupOptions.reduce((itemOptionsList, itemOptions) => {
+			const finalItemOptionsList = isFunction(itemOptions)
+				? itemOptions().map(NORMALIZE_ITEM_OPTIONS)
+				: [NORMALIZE_ITEM_OPTIONS(itemOptions)];
+
+			itemOptionsList.push(...finalItemOptionsList);
+
+			return itemOptionsList;
+		}, []);
+	});
+};
+
+const register = (MenuItemClass, normalize) => {
+	TYPE_NORMALIZER_MAP.push({
+		[TYPE]: MenuItemClass,
+		[NORMALIZER]: normalize
+	});
+};
+
+const SPEARATOR_MENU_ITEM_STYLE = {
+	display: 'block',
+	'border-bottom': `1px solid ${Var(MUTE_FRONT_COLOR)}`,
+	'margin': `${Var(SIZE_SM)} ${Var(SIZE_MD)}`,
+};
+
+class SpearatorMenuItem extends BaseMenuItem {
+	constructor(menu) {
+		super(menu);
+
+		setStyle(this[TEXT_ELEMENT], SPEARATOR_MENU_ITEM_STYLE);
+		this[LISTEN_ENTER](() => menu[FOCUS_ITEM]());
+	}
+}
+
+const normalize$2 = (_options) => {
+	return normalize$6(_options);
+};
 
 const SUB_MENU_OPITONS = 'sm',
 	EXPANDED_MENU = 'o',
@@ -510,200 +712,6 @@ addEventListener(WINDOW, 'keydown', event => {
 		}
 	}
 });
-
-const CHECKING_POSITION_STYLE = { top: 0, left: 0 };
-
-const MENU_ITEM_ROW_STYLE_ON_DISABLED = {
-	opacity: 0.4,
-	cursor: 'default'
-};
-
-const joinAcceleratorElement = acceleratorBarList => {
-	const lastBarIndex = acceleratorBarList.length - 1;
-	const fragement = createFragement();
-
-	acceleratorBarList.forEach((bar, index) => {
-		appendChild(fragement, bar);
-		index !== lastBarIndex && appendChild(fragement, createTextNode(' '));
-	});
-
-	return fragement;
-};
-
-class ClickableMenuItem extends FunctionMenuItem {
-	constructor(menu, options) {
-		super(menu, options);
-
-		const rowElement = this[ROW_ELEMENT];
-		const textElement = this[TEXT_ELEMENT];
-		const acceleratorSpan = createElement('span');
-		const checkboxSpan = createElement('span');
-
-		addClass(acceleratorSpan, 'menu-item-accelerator');
-		addClass(checkboxSpan, 'menu-item-checkbox');
-
-		setStyle(acceleratorSpan, MENU_ITEM_LABEL_SPAN_STYLE, { 'text-align': 'right' });
-		setStyle(checkboxSpan, MENU_ITEM_ICON_BOX_STYLE, CHECKING_POSITION_STYLE);
-		appendChild(textElement, acceleratorSpan);
-		appendChild(textElement, checkboxSpan);
-		appendChild(acceleratorSpan, joinAcceleratorElement(options.accelerator));
-
-		addEventListener(rowElement, 'mouseup', () => this[CLICK]());
-		addEventListener(rowElement, 'contextmenu', STOP_AND_PREVENT$1);
-
-		this[CLICK_LISTENER] = options.click;
-		this[KEY_ENTER] = event => event.key === 'Enter' && this[CLICK]();
-
-		const disabled = this[DISABLED] = options.isDisabled;
-
-		if (disabled) {
-			setStyle(this[ROW_ELEMENT], MENU_ITEM_ROW_STYLE_ON_DISABLED);
-			addClass(rowElement, 'disabled');
-		}
-
-		if (options.isChecked) {
-			addClass(rowElement, 'checked');
-		}
-	}
-
-	get [FOCUSABLE]() {
-		return !this[DISABLED];
-	}
-
-	[FOCUS$1]() {
-		if (!this[DISABLED]) {
-			super[FOCUS$1]();
-		}
-	}
-
-	[BLUR$1]() {
-		if (!this[DISABLED]) {
-			super[BLUR$1]();
-		}
-	}
-
-	[CLICK]() {
-		this[CLICK_LISTENER]();
-		closeAllMenu();
-	}
-
-	[ACTIVE$1]() {
-		this[CLICK]();
-	}
-}
-
-const DEFAULT_CLICK_FN = () => console.warn(undefined);
-
-const  normalize$4 = (_options) => {
-	const options = assign({
-		click: DEFAULT_CLICK_FN,
-		isChecked: false,
-		isDisabled: false,
-		accelerator: []
-	}, normalize$5(_options));
-
-	const {
-		click: _click = options.click,
-		isChecked: _isChecked = options.isChecked,
-		isDisabled: _isDisabled = options.isDisabled,
-		accelerator: _accelerator = options.accelerator
-	} = _options;
-
-	if (!isFunction(_click)) {
-		throwError$1('A `.click()` of clickable item MUST be a function.');
-	}
-
-	if (!isBoolean(_isChecked)) {
-		throwError$1('A `.isChecked` MUST be a `boolean`.');
-	}
-
-	if (!isBoolean(_isDisabled)) {
-		throwError$1('A `.isDisabled` MUST be a `boolean`.');
-	}
-
-	if (!isArray(_accelerator)) {
-		throwError$1('A `.accelerator` MUST be an array of string.');
-	}
-
-	options.accelerator = _accelerator.map(_bar => {
-		if (!instanceOf(_bar, DOCUMENT_FRAGEMENT)) {
-			throwError$1('A `.accelerator` MUST be a `DocumentFragement`.');
-		}
-
-		return _bar;
-	});
-
-	options.click = _click;
-	options.isChecked = _isChecked;
-	options.isDisabled = _isDisabled;
-
-	return options;
-};
-
-const NORMALIZER = 'n', TYPE = 't';
-const TYPE_NORMALIZER_MAP = [];
-
-const normalize$3 = (options) => {
-	options.type = 'type' in options ? options.type : ClickableMenuItem;
-
-	const pair = TYPE_NORMALIZER_MAP.find(pair => pair[TYPE] === options.type);
-
-	if (pair === undefined) {
-		throwError$1('Invalid menu item type.');
-	}
-
-	return pair[NORMALIZER](options);
-};
-
-const normalizeMenuOptions = (_options) => {
-	if (!isArray(_options)) {
-		throwError$1('Menu options MUST be an array.');
-	}
-
-	return _options.map(_groupOptions => {
-		if (!isArray(_groupOptions)) {
-			throwError$1('Menu item group options MUST be an array.');
-		}
-
-		const NORMALIZE_ITEM_OPTIONS = options => normalize$3(options);
-
-		return _groupOptions.reduce((itemOptionsList, itemOptions) => {
-			const finalItemOptionsList = isFunction(itemOptions)
-				? itemOptions().map(NORMALIZE_ITEM_OPTIONS)
-				: [NORMALIZE_ITEM_OPTIONS(itemOptions)];
-
-			itemOptionsList.push(...finalItemOptionsList);
-
-			return itemOptionsList;
-		}, []);
-	});
-};
-
-const register = (MenuItemClass, normalize) => {
-	TYPE_NORMALIZER_MAP.push({
-		[TYPE]: MenuItemClass,
-		[NORMALIZER]: normalize
-	});
-};
-
-const SPEARATOR_MENU_ITEM_STYLE = {
-	display: 'block',
-	'border-bottom': `1px solid ${Var(MUTE_FRONT_COLOR)}`,
-	'margin': `${Var(SIZE_SM)} ${Var(SIZE_MD)}`,
-};
-
-class SpearatorMenuItem extends BaseMenuItem {
-	constructor(menu) {
-		super(menu);
-
-		setStyle(this[TEXT_ELEMENT], SPEARATOR_MENU_ITEM_STYLE);
-		this[LISTEN_ENTER](() => menu[FOCUS_ITEM]());
-	}
-}
-
-const normalize$2 = (_options) => {
-	return normalize$6(_options);
-};
 
 const MENU_STYLE = {
 	display: 'block',
@@ -962,6 +970,8 @@ var index$1 = /*#__PURE__*/Object.freeze({
 	Submenu: SubmenuMenuItem
 });
 
+addListenerAfterClick(closeAllMenu);
+
 register(ClickableMenuItem, normalize$4);
 register(SubmenuMenuItem, normalize$1);
 register(SpearatorMenuItem, normalize$2);
@@ -980,15 +990,15 @@ const normalizeModifier = (_options = {}) => {
 	} = _options;
 
 	if (!isBoolean(_mnemonic)) {
-		throwError$1('A `modifier.mnemonic` MUST be a boolean.');
+		throwError('A `modifier.mnemonic` MUST be a boolean.');
 	}
 
 	if (!isBoolean(_blocking)) {
-		throwError$1('A `modifier.blocking` MUST be a boolean.');
+		throwError('A `modifier.blocking` MUST be a boolean.');
 	}
 
 	if (!isObject(_position)) {
-		throwError$1('A `modifier.position` MUST be a boolean.');
+		throwError('A `modifier.position` MUST be a boolean.');
 	} else {
 		const {
 			x: _x = options.position.x,
@@ -996,7 +1006,7 @@ const normalizeModifier = (_options = {}) => {
 		} = _position;
 
 		if (isNaN(_x) || isNaN(_y)) {
-			throwError$1('Invalid position.');
+			throwError('Invalid position.');
 		}
 
 		options.position.x = _x;
@@ -1032,7 +1042,7 @@ const popup$1 = (menuOptions, modifierOptions) => {
  */
 const normalize = _options => {
 	if (!isArray(_options)) {
-		throwError$1('A menu bar options MUST be an array.');
+		throwError('A menu bar options MUST be an array.');
 	}
 
 	const options = _options.map(_buttonOptions => {
@@ -1047,7 +1057,7 @@ const normalize = _options => {
 		} = _buttonOptions;
 
 		if (!isString(_title)) {
-			throwError$1('A menu bar button title MUST be a string.');
+			throwError('A menu bar button title MUST be a string.');
 		}
 
 		options.menu = isFunction(_menu) ? _menu : () => _menu;
@@ -1087,6 +1097,7 @@ const isReady =
 	() => !isNull(state[CONTAINER]) && !isNull(state[MENU_BAR$1]);
 
 let holding = false;
+let clicked = false;
 
 addEventListener(WINDOW, 'keyup', event => {
 	if (event.key === 'Alt') {
@@ -1113,7 +1124,9 @@ const KEY_MAP_OPERATION = {
 		}
 	},
 	Enter: () => {
-		if (!state[MENU_BAR$1][ACTIVE]) {
+		if (clicked) {
+			clicked = false;
+		} else if (!state[MENU_BAR$1][ACTIVE]) {
 			state[MENU_BAR$1][ACTIVE] = true;
 			current.next();
 		}
@@ -1168,6 +1181,11 @@ const resetMenuBar = () => {
 			false;
 	}
 };
+
+addListenerAfterClick(() => {
+	clicked = true;
+	resetMenuBar();
+});
 
 addEventListener(WINDOW, 'mousedown', resetMenuBar);
 addEventListener(WINDOW, 'mouseup', resetMenuBar);
