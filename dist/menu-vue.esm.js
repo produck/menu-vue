@@ -1,6 +1,6 @@
 /*!
- * @produck/menu-vue v0.1.3
- * (c) 2020-2021 ChaosLee
+ * @produck/menu-vue v0.1.4
+ * (c) 2020-2022 ChaosLee
  * Released under the MIT License.
  */
 const
@@ -585,7 +585,6 @@ const CONTAINER_STYLE = {
 
 setStyle(container, CONTAINER_STYLE);
 addClass(container, 'menu-scope');
-appendChild(BODY, container);
 
 let currentMenu = null;
 
@@ -607,7 +606,6 @@ const closeAllMenu = () => {
 	if (!isNull(currentMenu)) {
 		currentMenu[CLOSE]();
 		currentMenu = null;
-		expandable = expanding = null;
 		setStyle(container, { width: 0 });
 	}
 };
@@ -656,7 +654,9 @@ const tryActive = () => {
 	const topMenu = getTopMenu();
 	const focusingItem = topMenu[FOCUSING_ITEM];
 
-	focusingItem && focusingItem[ACTIVE$1]();
+	if (focusingItem) {
+		focusingItem[ACTIVE$1]();
+	}
 };
 
 const KEY_MAP_OPERATION$1 = {
@@ -668,17 +668,16 @@ const KEY_MAP_OPERATION$1 = {
 	Enter: tryActive
 };
 
-addEventListener(WINDOW, 'mousedown', closeAllMenu);
-addEventListener(WINDOW, 'blur', closeAllMenu);
-
-let expanding = null, expandable = null;
-
 const current = Object.freeze({
 	get expanding() {
-		return expanding;
+		return !isNull(currentMenu[EXPANDING_ITEM]);
 	},
 	get expandable() {
-		return expandable;
+		const topMenu = getTopMenu();
+
+		return topMenu[FOCUSING_ITEM]
+			? topMenu[FOCUSING_ITEM][EXPANDABLE]
+			: false;
 	},
 	get closed() {
 		return isNull(currentMenu);
@@ -690,28 +689,33 @@ const current = Object.freeze({
 	}
 });
 
-addEventListener(WINDOW, 'keydown', event => {
-	const { key } = event;
+let bootstraped$1 = false;
 
-	if (currentMenu) {
-		const topMenu = getTopMenu();
+const bootstrap$1 = () => {
+	if (!bootstraped$1) {
+		appendChild(BODY, container);
+		addEventListener(WINDOW, 'mousedown', closeAllMenu);
+		addEventListener(WINDOW, 'blur', closeAllMenu);
+		addEventListener(WINDOW, 'keydown', event => {
+			const { key } = event;
 
-		expanding = !isNull(currentMenu[EXPANDING_ITEM]);
+			if (currentMenu) {
+				const topMenu = getTopMenu();
 
-		expandable = topMenu[FOCUSING_ITEM]
-			? topMenu[FOCUSING_ITEM][EXPANDABLE]
-			: false;
+				if (key in KEY_MAP_OPERATION$1) {
+					KEY_MAP_OPERATION$1[key](event);
+				} else if (MNEMONIC_REG.test(key)) {
 
-		if (key in KEY_MAP_OPERATION$1) {
-			KEY_MAP_OPERATION$1[key](event);
-		} else if (MNEMONIC_REG.test(key)) {
-
-			if (topMenu[NEXT$1](toLowerCase(key))) {
-				topMenu[FOCUSING_ITEM][ACTIVE$1]();
+					if (topMenu[NEXT$1](toLowerCase(key))) {
+						topMenu[FOCUSING_ITEM][ACTIVE$1]();
+					}
+				}
 			}
-		}
+		});
+
+		bootstraped$1 = true;
 	}
-});
+};
 
 const MENU_STYLE = {
 	display: 'block',
@@ -1093,17 +1097,18 @@ const state = {
 	[SELECTING]: false
 };
 
-const isReady =
-	() => !isNull(state[CONTAINER]) && !isNull(state[MENU_BAR$1]);
+const isReady = () => !isNull(state[CONTAINER]) && !isNull(state[MENU_BAR$1]);
+
+const popupMenuAndFocusFirstItem = () => {
+	if (state[SELECTING] && !state[MENU_BAR$1][ACTIVE]) {
+		requestAnimationFrame(() => {
+			state[MENU_BAR$1][ACTIVE] = true;
+			current.next();
+		});
+	}
+};
 
 let holding = false;
-let clicked = false;
-
-addEventListener(WINDOW, 'keyup', event => {
-	if (event.key === 'Alt') {
-		holding = false;
-	}
-});
 
 const KEY_MAP_OPERATION = {
 	Alt: () => {
@@ -1123,20 +1128,8 @@ const KEY_MAP_OPERATION = {
 			}
 		}
 	},
-	Enter: () => {
-		if (clicked) {
-			clicked = false;
-		} else if (!state[MENU_BAR$1][ACTIVE]) {
-			state[MENU_BAR$1][ACTIVE] = true;
-			current.next();
-		}
-	},
-	ArrowDown: () => {
-		if (!state[MENU_BAR$1][ACTIVE]) {
-			state[MENU_BAR$1][ACTIVE] = true;
-			current.next();
-		}
-	},
+	Enter: popupMenuAndFocusFirstItem,
+	ArrowDown: popupMenuAndFocusFirstItem,
 	ArrowLeft: () => {
 		if (state[SELECTING]) {
 			if (current.closed || current.expanding === false) {
@@ -1160,7 +1153,7 @@ const KEY_MAP_OPERATION = {
 		}
 	},
 	Escape: () => {
-		if (current.closed) {
+		if (state[SELECTING]) {
 			if (state[MENU_BAR$1][ACTIVE]) {
 				state[MENU_BAR$1][ACTIVE] = false;
 			} else if (state[MENU_BAR$1][FOCUSING_BUTTON]) {
@@ -1182,39 +1175,47 @@ const resetMenuBar = () => {
 	}
 };
 
-addListenerAfterClick(() => {
-	clicked = true;
-	resetMenuBar();
-});
-
-addEventListener(WINDOW, 'mousedown', resetMenuBar);
-addEventListener(WINDOW, 'mouseup', resetMenuBar);
-addEventListener(WINDOW, 'blur', resetMenuBar);
-
-addEventListener(WINDOW, 'keydown', event => {
-	if (isReady()) {
-		const key = event.key;
-
-		if (key in KEY_MAP_OPERATION) {
-			KEY_MAP_OPERATION[key]();
-		} else if (MNEMONIC_REG.test(key)) {
-			if (current.closed) {
-				if (!state[MENU_BAR$1][ACTIVE]) {
-					state[MENU_BAR$1][ACTIVE] = true;
-				}
-
-				if (state[MENU_BAR$1][NEXT](toLowerCase(key))) {
-					current.next();
-				}
-			}
-		}
-	}
-});
-
 const install = () => {
 	if (state[MENU_BAR$1] && state[CONTAINER]) {
 		removeAllChild(state[CONTAINER]);
 		appendChild(state[CONTAINER], state[MENU_BAR$1][BAR_ELEMENT]);
+	}
+};
+
+let bootstraped = false;
+
+const bootstrap = () => {
+	if (!bootstraped) {
+		addEventListener(WINDOW, 'mousedown', resetMenuBar);
+		addEventListener(WINDOW, 'blur', resetMenuBar);
+
+		addEventListener(WINDOW, 'keydown', event => {
+			if (isReady()) {
+				const key = event.key;
+
+				if (key in KEY_MAP_OPERATION) {
+					KEY_MAP_OPERATION[key]();
+				} else if (MNEMONIC_REG.test(key) && current.closed && state[SELECTING]) {
+					if (!state[MENU_BAR$1][ACTIVE]) {
+						state[MENU_BAR$1][ACTIVE] = true;
+					}
+
+					if (state[MENU_BAR$1][NEXT](toLowerCase(key))) {
+						current.next();
+					}
+				}
+			}
+		});
+
+		addEventListener(WINDOW, 'keyup', event => {
+			if (event.key === 'Alt') {
+				holding = false;
+			}
+		});
+
+		bootstrap$1();
+		addListenerAfterClick(() => resetMenuBar());
+		bootstraped = true;
 	}
 };
 
@@ -1285,6 +1286,7 @@ class MenuBar {
 
 			if (value) {
 				addClass(barElement, 'active');
+				console.log(1111);
 				state[SELECTING] = true;
 
 				if (this[_FOCUSING_BUTTON]) {
@@ -1541,5 +1543,7 @@ var index = {
 	},
 	MenuItem: index$1
 };
+
+bootstrap();
 
 export default index;

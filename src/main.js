@@ -28,3 +28,9 @@ window.addEventListener('contextmenu', event => {
 		]
 	]);
 });
+
+window.addEventListener('keydown', event => {
+	if (event.altKey) {
+		event.preventDefault();
+	}
+});

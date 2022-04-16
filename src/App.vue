@@ -2,6 +2,8 @@
 
 <div
 >
+	<div ref="bar"></div>
+
 	<div
 		@contextmenu.prevent.stop="$pMenu.popup(menuOptions)"
 	>some examples</div>
@@ -76,6 +78,66 @@ export default {
 				]
 			]);
 		}
+	},
+	mounted() {
+		this.$pMenu.Bar.set([
+			{
+				title: '文件(&F)',
+				menu: [
+					[
+						{
+							label: '新建(&N)',
+						},
+						{
+							label: '新建窗口(&W)'
+						},
+					],
+					[
+						{
+							label: '打开(&O)',
+						},
+					],
+					[
+						{
+							label: '退出(&X)',
+							click() {
+								window.location.reload();
+							}
+						}
+					]
+				]
+			},
+			{
+				title: '编辑(&E)',
+				menu: []
+			},
+			{
+				title: '视图(&V)',
+				menu: [
+					[
+						{
+							label: '放大',
+							click: () => {
+								const { drawing } = this.$spoke.getEditor('primary');
+
+								drawing.setScaleInMode(drawing.scale - 1);
+							}
+						},
+						{
+							label: '缩小'
+						},
+						{
+							label: '重置视野'
+						},
+						{
+							label: '适应'
+						}
+					]
+				]
+			}
+		]);
+
+		this.$pMenu.Bar.mount(this.$refs.bar);
 	}
 };
 </script>
